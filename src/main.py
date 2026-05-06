@@ -20,6 +20,7 @@ import config
 import data_pipeline as dp
 import visualizer as viz
 from models.lstm_model import LSTMModel
+from models.rf_model import RFModel
 
 
 def main() -> None:
@@ -68,24 +69,47 @@ def main() -> None:
     lstm = LSTMModel()
     lstm.train(x_train, y_train)
 
-    # ── 4. Evaluate ───────────────────────────────────────────────────────────
+    # ── 4. Evaluate — LSTM ────────────────────────────────────────────────────
     print("\n" + "=" * 60)
-    print("STEP 4 — Evaluating on test set …")
+    print("STEP 4a — Evaluating LSTM on test set …")
     print("=" * 60)
 
-    scaled_preds = lstm.predict(x_test)
-    predictions = scaler.inverse_transform(scaled_preds)
+    scaled_preds_lstm = lstm.predict(x_test)
+    predictions_lstm = scaler.inverse_transform(scaled_preds_lstm)
 
-    metrics = lstm.evaluate(predictions, y_test)
-    print(f"RMSE: {metrics['rmse']:.4f}")
+    metrics_lstm = lstm.evaluate(predictions_lstm, y_test)
+    print(f"LSTM  RMSE : {metrics_lstm['rmse']:.4f}")
 
-    # Attach predictions to the validation slice
+    # ── 4b. Train & evaluate — Random Forest ──────────────────────────────────
+    print("\n" + "=" * 60)
+    print("STEP 4b — Training & evaluating Random Forest baseline …")
+    print("=" * 60)
+
+    rf = RFModel()
+    rf.train(x_train, y_train)
+
+    scaled_preds_rf = rf.predict(x_test)
+    predictions_rf = scaler.inverse_transform(scaled_preds_rf)
+
+    metrics_rf = rf.evaluate(predictions_rf, y_test)
+    print(f"RF    RMSE : {metrics_rf['rmse']:.4f}")
+
+    # ── Summary table ─────────────────────────────────────────────────────────
+    print("\n── Model Comparison ──────────────────────────────────────")
+    print(f"  {'Model':<20} {'RMSE':>10}")
+    print(f"  {'-'*30}")
+    print(f"  {'LSTM':<20} {metrics_lstm['rmse']:>10.4f}")
+    print(f"  {'Random Forest':<20} {metrics_rf['rmse']:>10.4f}")
+    print()
+
+    # Attach both prediction sets to the validation slice
     data = df[["Close"]]
-    train_slice = data[: training_data_len]
+    train_slice = data[:training_data_len]
     valid_slice = data[training_data_len:].copy()
-    valid_slice["Predictions"] = predictions[: len(valid_slice)]
+    valid_slice["Predictions"]    = predictions_lstm[: len(valid_slice)]
+    valid_slice["RF Predictions"] = predictions_rf[: len(valid_slice)]
 
-    # Quick validation-only plot
+    # Quick validation-only comparison plot (no future forecast yet)
     viz.plot_predictions(train_slice, valid_slice, future_df=None)
 
     # ── 5. Future forecast ────────────────────────────────────────────────────
@@ -107,9 +131,10 @@ def main() -> None:
     print("=" * 60)
 
     # Use the original full df for train / valid labels on x-axis
-    train_full = df[: training_data_len]
+    train_full = df[:training_data_len]
     valid_full = df[training_data_len:].copy()
-    valid_full["Predictions"] = predictions[: len(valid_full)]
+    valid_full["Predictions"]    = predictions_lstm[: len(valid_full)]
+    valid_full["RF Predictions"] = predictions_rf[: len(valid_full)]
 
     viz.plot_predictions(train_full, valid_full, future_df=future_df)
 

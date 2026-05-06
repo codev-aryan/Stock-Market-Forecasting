@@ -142,34 +142,60 @@ def plot_predictions(
     future_df: pd.DataFrame | None = None,
 ) -> None:
     """
-    Overlay train, validation actuals, validation predictions, and (optionally)
-    the future forecast on a single chart.
+    Overlay train, validation actuals, LSTM predictions, RF predictions
+    (if present), and the optional future forecast on a single chart.
+
+    Expected columns in `valid`
+    ---------------------------
+    'Close'            : actual closing prices  (required)
+    'Predictions'      : LSTM predictions       (required)
+    'RF Predictions'   : RF predictions         (optional — plotted when present)
 
     Parameters
     ----------
     train      : training slice of the original DataFrame
-    valid      : validation slice with a 'Predictions' column already attached
+    valid      : validation slice with prediction columns already attached
     future_df  : optional DataFrame with a 'Future Predictions' column
     """
     plt.figure(figsize=(16, 8))
 
-    title = f"{config.PRIMARY_TICKER_NAME} Stock Price Prediction"
+    title = f"{config.PRIMARY_TICKER_NAME} Stock Price Prediction — LSTM vs Random Forest"
     if future_df is not None:
         title += f" (with {config.NUM_FUTURE_DAYS}-Day Forecast)"
     plt.title(title)
     plt.xlabel("Date", fontsize=18)
     plt.ylabel("Close Price USD ($)", fontsize=18)
 
-    plt.plot(train["Close"], color="blue", label="Training Data (Actual)")
-    plt.plot(valid["Close"], color="green", label="Validation Data (Actual)")
-    plt.plot(valid["Predictions"], color="red", label="Validation Predictions")
+    # ── Actuals ───────────────────────────────────────────────────────────────
+    plt.plot(train["Close"],  color="blue",  label="Training Data (Actual)")
+    plt.plot(valid["Close"],  color="green", label="Validation Data (Actual)")
 
+    # ── LSTM predictions ──────────────────────────────────────────────────────
+    if "Predictions" in valid.columns:
+        plt.plot(
+            valid["Predictions"],
+            color="red",
+            linewidth=1.5,
+            label="LSTM Predictions",
+        )
+
+    # ── RF predictions (optional) ─────────────────────────────────────────────
+    if "RF Predictions" in valid.columns:
+        plt.plot(
+            valid["RF Predictions"],
+            color="orange",
+            linestyle="--",
+            linewidth=1.5,
+            label="Random Forest Predictions",
+        )
+
+    # ── Future forecast (optional) ────────────────────────────────────────────
     if future_df is not None:
         plt.plot(
             future_df["Future Predictions"],
             color="purple",
             linestyle="--",
-            label=f"Future {config.NUM_FUTURE_DAYS} Days (Predictions)",
+            label=f"Future {config.NUM_FUTURE_DAYS} Days (LSTM Forecast)",
         )
 
     plt.legend(loc="lower right")

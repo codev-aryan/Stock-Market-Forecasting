@@ -40,5 +40,9 @@ BATCH_SIZE: int = 1
 OPTIMIZER: str = "adam"
 LOSS: str = "mean_squared_error"
 
+# ── Random Forest Hyperparameters ─────────────────────────────────────────────
+RF_N_ESTIMATORS: int = 100   # Number of trees in the forest
+RF_RANDOM_STATE: int = 42    # Seed for reproducibility
+
 # ── Forecasting ───────────────────────────────────────────────────────────────
 NUM_FUTURE_DAYS: int = 60          # How many calendar days to forecast ahead
