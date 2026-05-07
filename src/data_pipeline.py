@@ -100,9 +100,13 @@ def build_lstm_datasets(
 
     training_data_len: int = int(np.ceil(len(dataset) * config.TRAIN_SPLIT_RATIO))
 
-    # Scale
+    # Scale using ONLY training data (prevents data leakage)
+    train_data_raw = dataset[:training_data_len]
+
     scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data: np.ndarray = scaler.fit_transform(dataset)
+    scaler.fit(train_data_raw)
+
+    scaled_data: np.ndarray = scaler.transform(dataset)
 
     # ── Training sequences ────────────────────────────────────────────────────
     train_data = scaled_data[:training_data_len, :]
