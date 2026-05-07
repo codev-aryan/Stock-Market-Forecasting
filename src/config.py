@@ -28,7 +28,7 @@ LSTM_END_DATE: datetime = datetime.now()
 
 # ── Data Pipeline ─────────────────────────────────────────────────────────────
 LOOKBACK_WINDOW: int = 60          # Number of past days used as features
-TRAIN_SPLIT_RATIO: float = 0.9    # Fraction of data used for training
+TRAIN_SPLIT_RATIO: float = 0.85    # Fraction of data used for training
 MOVING_AVG_WINDOWS: list[int] = [10, 20, 50]  # MA periods to compute
 
 # ── LSTM Hyperparameters ──────────────────────────────────────────────────────
