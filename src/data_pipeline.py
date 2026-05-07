@@ -175,11 +175,11 @@ def build_future_sequence(
     )
     print("Future prediction generation complete.")
 
-    # Build a simple calendar list (includes weekends — filter downstream if desired)
+    # Generate future BUSINESS dates only (skip weekends)
     last_known_date = pd.Timestamp.now().normalize()
-    future_dates = [
-        last_known_date + timedelta(days=x)
-        for x in range(1, config.NUM_FUTURE_DAYS + 1)
-    ]
 
+    future_dates = pd.bdate_range(
+        start=last_known_date + timedelta(days=1),
+        periods=config.NUM_FUTURE_DAYS
+    )
     return future_predictions_usd, future_dates
