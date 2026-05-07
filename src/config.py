@@ -28,15 +28,25 @@ LSTM_END_DATE: datetime = datetime.now()
 
 # ── Data Pipeline ─────────────────────────────────────────────────────────────
 LOOKBACK_WINDOW: int = 60          # Number of past days used as features
-TRAIN_SPLIT_RATIO: float = 0.95    # Fraction of data used for training
+TRAIN_SPLIT_RATIO: float = 0.9    # Fraction of data used for training
 MOVING_AVG_WINDOWS: list[int] = [10, 20, 50]  # MA periods to compute
 
-# ── Model Hyperparameters ─────────────────────────────────────────────────────
+# ── LSTM Hyperparameters ──────────────────────────────────────────────────────
 LSTM_UNITS_LAYER_1: int = 128
 LSTM_UNITS_LAYER_2: int = 64
 DENSE_UNITS: int = 25
-EPOCHS: int = 1
-BATCH_SIZE: int = 1
+
+EPOCHS: int = 50
+BATCH_SIZE: int = 32
+
+DROPOUT_RATE: float = 0.2            # Applied after each LSTM layer to prevent overfitting
+RECURRENT_DROPOUT_RATE: float = 0.2  # Dropout on the recurrent connections
+
+# EarlyStopping — halts training once val_loss stops improving
+EARLY_STOPPING_PATIENCE: int = 10    # Tolerate 10 epochs of no improvement before stopping
+EARLY_STOPPING_MONITOR: str = "val_loss"
+VALIDATION_SPLIT: float = 0.1        # 10 % of training data reserved for val_loss
+
 OPTIMIZER: str = "adam"
 LOSS: str = "mean_squared_error"
 
